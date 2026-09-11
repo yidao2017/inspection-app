@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0f3e3c">
+<title>营运二部 · 门店巡检系统</title>
+<style>
+:root{
+  --bg:#f5f4f0; --card:#ffffff; --ink:#1b2a29; --ink2:#3d4f4d; --muted:#7c8b88;
+  --line:#e7e5df; --line2:#f0eee8;
+  --brand:#0f3e3c; --brand2:#1b5c53; --gold:#b3893f; --gold-l:#e2c88f;
+  --ok:#1f7a55; --okbg:#e9f6ef; --okline:#bfe3d0;
+  --bad:#c0392b; --badbg:#fdecea; --badline:#f3c8c2;
+  --wait:#8a8f8d; --waitbg:#f2f2f0;
+  --r:14px; --shadow:0 1px 2px rgba(20,40,38,.05),0 6px 18px rgba(20,40,38,.06);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink); font-size:15px; line-height:1.55;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:640px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+
+/* ---------- header ---------- */
+header.top{
+  background:linear-gradient(140deg,#0d3735 0%,#14514a 55%,#1c6157 100%);
+  color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 16px;position:relative;overflow:hidden;
+}
+header.top:after{
+  content:"";position:absolute;right:-40px;top:-60px;width:170px;height:170px;border-radius:50%;
+  background:radial-gradient(circle,rgba(226,200,143,.22),rgba(226,200,143,0) 70%);
+}
+.t-title{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;letter-spacing:.5px;position:relative;z-index:1}
+.t-title .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-l);box-shadow:0 0 8px var(--gold-l)}
+.t-sub{font-size:12px;color:rgba(255,255,255,.68);margin-top:2px;letter-spacing:.3px;position:relative;z-index:1}
+.t-main{display:flex;align-items:center;gap:16px;margin-top:14px;position:relative;z-index:1}
+.ring{width:88px;height:88px;flex:0 0 88px;border-radius:50%;display:grid;place-items:center;position:relative}
+.ring i{
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(var(--gold-l) calc(var(--p)*1%), rgba(255,255,255,.16) 0);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 8px),#000 calc(100% - 7px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 8px),#000 calc(100% - 7px));
+}
+.ring .num{font-size:27px;font-weight:800;line-height:1;letter-spacing:-1px}
+.ring .num small{font-size:12px;font-weight:500;color:rgba(255,255,255,.6);letter-spacing:0}
+.t-meta{flex:1;min-width:0}
+.t-meta .line{font-size:12.5px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-meta .line b{color:#fff;font-weight:600}
+.pbar{height:6px;border-radius:99px;background:rgba(255,255,255,.18);margin-top:8px;overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-l),#fff);transition:width .3s}
+
+/* ---------- tabs ---------- */
+main{padding:14px 14px 8px}
+.view{display:none;animation:fade .22s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- cards ---------- */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;margin-bottom:12px;border:1px solid var(--line2)}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.card-h h3{margin:0;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+.card-h h3:before{content:"";width:3px;height:14px;border-radius:2px;background:var(--gold)}
+.hint{font-size:12px;color:var(--muted)}
+
+/* ---------- form ---------- */
+.field{margin-bottom:11px}
+.field:last-child{margin-bottom:0}
+.field>label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.3px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  padding:7px 13px;border-radius:99px;border:1px solid var(--line);background:#fbfaf7;
+  font-size:13px;color:var(--ink2);transition:.15s;user-select:none;
+}
+.chip:active{transform:scale(.96)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+input[type=text],input[type=date],input[type=datetime-local],select,textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fbfaf7;
+  outline:none;transition:.15s;font-size:14px;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--brand2);background:#fff;box-shadow:0 0 0 3px rgba(27,92,83,.08)}
+textarea{resize:vertical;min-height:62px;line-height:1.5}
+.row2{display:flex;gap:10px}
+.row2>*{flex:1;min-width:0}
+
+/* ---------- item ---------- */
+.cat-jump{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;margin:0 -14px;padding-left:14px;padding-right:14px;scrollbar-width:none}
+.cat-jump::-webkit-scrollbar{display:none}
+.cat-jump button{
+  flex:0 0 auto;padding:6px 12px;border-radius:99px;background:#fff;border:1px solid var(--line);
+  font-size:12.5px;color:var(--ink2);white-space:nowrap;
+}
+.cat-jump button b{color:var(--brand);font-weight:700}
+.cat-jump button.done{background:var(--okbg);border-color:var(--okline)}
+
+.sec{margin-bottom:14px;scroll-margin-top:8px}
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 12px;background:linear-gradient(90deg,#edf3f1,#f8faf9);border-radius:11px;border:1px solid #e2ebe8;
+  position:sticky;top:0;z-index:5;
+}
+.sec-head .n{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sec-head .n em{font-style:normal;font-size:12px;font-weight:600;color:var(--gold);background:#fff;border:1px solid var(--gold-l);padding:1px 7px;border-radius:99px}
+.sec-head .quick{font-size:12px;color:var(--brand);font-weight:600;padding:5px 9px;border-radius:8px;background:#fff;border:1px solid #d8e5e1}
+.grp{margin-top:8px}
+.grp-name{font-size:12.5px;font-weight:700;color:var(--gold);padding:6px 2px 2px;letter-spacing:.4px;display:flex;align-items:center;gap:6px}
+.grp-name:before{content:"";width:12px;height:1.5px;background:var(--gold);border-radius:2px}
+
+.item{background:#fff;border:1px solid var(--line2);border-left:3px solid var(--wait);border-radius:11px;padding:12px;margin-top:8px;transition:.18s}
+.item.pass{border-left-color:var(--ok);background:#fcfffd}
+.item.fail{border-left-color:var(--bad);background:#fffcfb}
+.item-h{display:flex;align-items:flex-start;gap:9px}
+.item-idx{flex:0 0 22px;height:22px;border-radius:7px;background:#f1f1ee;color:var(--muted);font-size:11.5px;font-weight:700;display:grid;place-items:center;margin-top:1px}
+.item.pass .item-idx{background:var(--okbg);color:var(--ok)}
+.item.fail .item-idx{background:var(--badbg);color:var(--bad)}
+.item-b{flex:1;min-width:0}
+.item-name{font-size:14px;font-weight:700;letter-spacing:.2px}
+.item-req{font-size:12.5px;color:#5b6b68;white-space:pre-wrap;margin-top:4px;line-height:1.62}
+.item-sc{flex:0 0 auto;font-size:11.5px;font-weight:700;color:var(--gold);background:#fdf8ee;border:1px solid #f0e3c8;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btns button{
+  flex:1;padding:9px 0;border-radius:10px;font-size:13.5px;font-weight:600;
+  border:1px solid var(--line);background:#fbfaf7;color:var(--ink2);transition:.14s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.btns button:active{transform:scale(.97)}
+.b-ok.on{background:var(--ok);border-color:var(--ok);color:#fff;box-shadow:0 4px 12px rgba(31,122,85,.22)}
+.b-no.on{background:var(--bad);border-color:var(--bad);color:#fff;box-shadow:0 4px 12px rgba(192,57,43,.22)}
+.detail{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);display:none}
+.detail.on{display:block}
+.photos{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.ph{position:relative;width:66px;height:66px;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph span{position:absolute;top:2px;right:2px;width:19px;height:19px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:13px;display:grid;place-items:center;line-height:1}
+.ph-add{width:66px;height:66px;border-radius:9px;border:1px dashed #cfd8d5;background:#fafbfa;color:var(--muted);font-size:11px;display:grid;place-items:center;text-align:center;line-height:1.3}
+.ph-add input{display:none}
+
+/* ---------- report ---------- */
+.bigscore{text-align:center;padding:6px 0 2px}
+.bigscore .v{font-size:52px;font-weight:800;letter-spacing:-2px;line-height:1;color:var(--brand)}
+.bigscore .v small{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:3px}
+.bigscore .l{font-size:12.5px;color:var(--muted);margin-top:6px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.kpi{background:#fafbf9;border:1px solid var(--line2);border-radius:11px;padding:10px 8px;text-align:center}
+.kpi b{display:block;font-size:18px;font-weight:800;letter-spacing:-.5px}
+.kpi span{font-size:11px;color:var(--muted)}
+.bars{margin-top:4px}
+.bar{margin-top:11px}
+.bar-t{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.bar-t b{font-weight:700}
+.bar-t span{color:var(--muted)}
+.bar-bg{height:8px;border-radius:99px;background:#eef0ee;overflow:hidden}
+.bar-bg i{display:block;height:100%;border-radius:99px;transition:width .45s cubic-bezier(.3,1,.4,1)}
+.an{font-size:13px;line-height:1.75;color:#3f504e}
+.an p{margin:0 0 8px}
+.an p:last-child{margin:0}
+.an b{color:var(--brand);font-weight:700}
+.an .warn{color:var(--bad);font-weight:700}
+.fail-line{display:flex;gap:9px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.fail-line:last-child{border-bottom:none}
+.fail-line .tag{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--bad);background:var(--badbg);border-radius:6px;padding:2px 7px;height:20px;line-height:16px}
+.fail-line .tx{flex:1;min-width:0}
+.fail-line .tx b{display:block;font-weight:700;font-size:13.5px}
+.fail-line .tx em{font-style:normal;color:var(--muted);font-size:12px;white-space:pre-wrap;display:block;margin-top:2px}
+.fail-line .cut{flex:0 0 auto;color:var(--bad);font-weight:700;font-size:12.5px}
+
+.btn-main{
+  width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:#fff;font-size:15px;font-weight:700;letter-spacing:.5px;box-shadow:0 6px 16px rgba(15,62,60,.24);margin-bottom:9px;
+}
+.btn-main:active{transform:translateY(1px)}
+.btn-ghost{
+  width:100%;padding:12px;border-radius:12px;background:#fff;border:1px solid var(--line);
+  color:var(--ink2);font-size:14px;font-weight:600;margin-bottom:9px;
+}
+.btn-row{display:flex;gap:9px}
+.btn-row>*{flex:1;margin-bottom:9px}
+
+/* ---------- todo ---------- */
+.todo{background:#fff;border:1px solid var(--line2);border-radius:12px;padding:12px;margin-bottom:10px;border-left:3px solid var(--bad);box-shadow:var(--shadow)}
+.todo.doing{border-left-color:#e0a800}
+.todo.done{border-left-color:var(--ok);opacity:.72}
+.todo-h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.todo-h b{font-size:14px;font-weight:700}
+.todo-src{font-size:11.5px;color:var(--muted);margin-top:2px}
+.todo-note{font-size:12.5px;color:#5b6b68;background:#fafaf8;border-radius:8px;padding:8px 10px;margin-top:8px;white-space:pre-wrap}
+.todo-ctl{display:flex;gap:8px;margin-top:9px;align-items:center}
+.todo-ctl select{flex:0 0 96px;padding:8px 10px;font-size:12.5px;border-radius:9px}
+.todo-ctl input{flex:1;padding:8px 10px;font-size:12.5px;border-radius:9px}
+.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.pill.p{background:var(--badbg);color:var(--bad)}
+.pill.d{background:#fdf6e3;color:#a8801a}
+.pill.o{background:var(--okbg);color:var(--ok)}
+.filters{display:flex;gap:7px;margin-bottom:12px}
+.filters button{flex:1;padding:8px 0;border-radius:10px;background:#fff;border:1px solid var(--line);font-size:12.5px;color:var(--ink2);font-weight:600}
+.filters button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.empty{text-align:center;padding:44px 20px;color:var(--muted);font-size:13px}
+.empty .ic{font-size:38px;display:block;margin-bottom:10px;opacity:.5}
+
+/* ---------- records ---------- */
+.rec{background:#fff;border:1px solid var(--line2);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:var(--shadow)}
+.rec-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rec-h b{font-size:14px}
+.rec-h .sc{font-size:19px;font-weight:800;color:var(--brand);white-space:nowrap}
+.rec-h .sc small{font-size:11px;color:var(--muted);font-weight:500}
+.rec-m{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6}
+.rec-a{display:flex;gap:8px;margin-top:10px}
+.rec-a button{flex:1;padding:8px 0;border-radius:9px;border:1px solid var(--line);background:#fbfaf7;font-size:12.5px;font-weight:600;color:var(--ink2)}
+
+/* ---------- nav ---------- */
+nav.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+}
+nav.tabbar .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabbar button{padding:8px 0 9px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:10px;font-weight:600;transition:.15s;position:relative}
+nav.tabbar button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav.tabbar button.on{color:var(--brand)}
+nav.tabbar button .bdg{position:absolute;transform:translate(14px,-4px);background:var(--bad);color:#fff;font-size:9.5px;min-width:15px;height:15px;border-radius:99px;display:grid;place-items:center;padding:0 4px;font-weight:700}
+
+/* ---------- sheet / toast ---------- */
+.mask{position:fixed;inset:0;background:rgba(12,28,27,.45);z-index:60;opacity:0;pointer-events:none;transition:.2s}
+.mask.on{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:61;background:#fff;border-radius:20px 20px 0 0;
+  max-height:86vh;overflow-y:auto;transform:translateY(102%);transition:transform .28s cubic-bezier(.3,1,.4,1);
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto;
+}
+.sheet.on{transform:none}
+.sheet-bar{width:38px;height:4px;border-radius:99px;background:#e2e2de;margin:0 auto 14px}
+.sheet h3{margin:0 0 12px;font-size:16px;font-weight:700}
+.toast{
+  position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
+  background:rgba(20,40,38,.93);color:#fff;padding:10px 18px;border-radius:99px;font-size:13.5px;font-weight:600;
+  z-index:80;opacity:0;pointer-events:none;transition:.22s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="t-title"><span class="dot"></span>营运二部 · 门店巡检系统</div>
+    <div class="t-sub">逸品淮扬 / 逸道·朝茶暮酒 · 标准巡检表</div>
+    <div class="t-main">
+      <div class="ring" id="ring" style="--p:0">
+        <i></i>
+        <div class="num"><span id="ringNum">0</span><small>/100</small></div>
+      </div>
+      <div class="t-meta">
+        <div class="line">门店：<b id="hStore">未选择</b></div>
+        <div class="line">已评 <b id="hDone">0</b> / 50 项　不符合 <b id="hFail">0</b> 项</div>
+        <div class="pbar"><i id="hBar" style="width:0%"></i></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ 巡检 ============ -->
+    <section class="view on" id="v-inspect">
+      <div class="cat-jump" id="catJump"></div>
+
+      <div class="card" id="metaCard">
+        <div class="card-h">
+          <h3>本次巡检信息</h3>
+          <button class="hint" id="toggleMeta" style="font-weight:600;color:var(--brand)">收起</button>
+        </div>
+        <div id="metaBody">
+          <div class="field">
+            <label>品牌</label>
+            <div class="chips" id="chipBrand"></div>
+          </div>
+          <div class="field">
+            <label>门店</label>
+            <div class="chips" id="chipStore"></div>
+          </div>
+          <div class="field">
+            <label>时段</label>
+            <div class="chips" id="chipPeriod"></div>
+          </div>
+          <div class="field row2">
+            <div>
+              <label>巡检日期</label>
+              <input type="date" id="inDate">
+            </div>
+            <div>
+              <label>巡检人</label>
+              <input type="text" id="inPerson" placeholder="姓名">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="list"></div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13.5px;font-weight:700">总得分（满分 100 分）</span>
+          <b id="listTotal" style="font-size:22px;font-weight:800;color:var(--brand)">0</b>
+        </div>
+        <div class="hint" style="margin-top:6px">评分标准：内容里但凡有不符合标准的，即不得分。</div>
+      </div>
+    </section>
+
+    <!-- ============ 报告 ============ -->
+    <section class="view" id="v-report">
+      <div class="card">
+        <div class="bigscore">
+          <div class="v"><span id="rScore">0</span><small>/ 100 分</small></div>
+          <div class="l" id="rLevel">尚未开始评分</div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><b id="rRate">0%</b><span>得分率</span></div>
+          <div class="kpi"><b id="rDone" style="color:var(--brand)">0/50</b><span>已评项目</span></div>
+          <div class="kpi"><b id="rFail" style="color:var(--bad)">0</b><span>不符合项</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>分类得分</h3><span class="hint">满分 100 分</span></div>
+        <div class="bars" id="rBars"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>问题分析</h3></div>
+        <div class="an" id="rAnalysis"></div>
+      </div>
+
+      <div class="card" id="rFailCard">
+        <div class="card-h"><h3>不符合明细</h3><span class="hint" id="rFailCnt">0 项</span></div>
+        <div id="rFailList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>输出与落实</h3></div>
+        <button class="btn-main" id="btnSave">保存本次巡检并生成待办</button>
+        <button class="btn-ghost" id="btnArchive">存入报告库并开始新巡检</button>
+        <button class="btn-main" id="btnPdf" style="background:linear-gradient(135deg,#8a6420,#b3893f);box-shadow:0 6px 16px rgba(179,137,63,.28)">下载 PDF 报告</button>
+        <button class="btn-ghost" id="btnCopy">复制巡检报告（可发微信）</button>
+        <div class="btn-row">
+          <button class="btn-ghost" id="btnCsv">导出表格 CSV</button>
+          <button class="btn-ghost" id="btnJson">导出数据 JSON</button>
+        </div>
+        <div class="hint" style="margin-top:10px;line-height:1.6">「下载 PDF 报告」会自动生成 A4 报告并保存到设备（若 CDN 不可用会自动转打印面板）。微信内下载建议在右上角用「浏览器打开」。</div>
+      </div>
+    </section>
+
+    <!-- ============ 待办 ============ -->
+    <section class="view" id="v-todo">
+      <div class="filters" id="todoFilters">
+        <button class="on" data-f="all">全部 <span id="cAll">0</span></button>
+        <button data-f="pending">待处理 <span id="cPend">0</span></button>
+        <button data-f="doing">整改中 <span id="cDoing">0</span></button>
+        <button data-f="done">已完成 <span id="cDone">0</span></button>
+      </div>
+      <div id="todoList"></div>
+    </section>
+
+    <!-- ============ 报告库 ============ -->
+    <section class="view" id="v-records">
+      <div class="card">
+        <div class="card-h"><h3>巡检报告库</h3><span class="hint" id="recCnt">0 份</span></div>
+        <div class="hint" id="libStats" style="margin:-4px 0 10px"></div>
+        <div class="chips" id="libStores" style="margin-bottom:12px"></div>
+        <div id="recList"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>开始新的巡检</h3></div>
+        <button class="btn-main" id="btnReset">重新开始新巡检（报告自动存入报告库）</button>
+        <div class="hint" style="margin-top:4px;line-height:1.6">点击后：本次巡检报告自动归档进报告库 → 清空评分与门店信息 → 回到巡检页填写新门店。</div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>数据管理</h3></div>
+        <div class="btn-row">
+          <button class="btn-ghost" id="btnImport" style="margin-bottom:0">导入 JSON</button>
+          <button class="btn-ghost" id="btnLibExport" style="margin-bottom:0">导出报告库</button>
+        </div>
+        <div class="hint" style="margin-top:10px;line-height:1.6">数据保存在本机浏览器中，清除浏览器数据会一并清除，重要报告请及时导出备份。</div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <div class="in">
+      <button class="on" data-v="inspect">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        巡检
+      </button>
+      <button data-v="report">
+        <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        得分报告
+      </button>
+      <button data-v="todo">
+        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 13l2 2 4-4"/></svg>
+        待办
+      </button>
+      <button data-v="records">
+        <svg viewBox="0 0 24 24"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+        报告库
+      </button>
+    </div>
+  </nav>
+</div>
+
+<div class="mask" id="mask"></div>
+<div class="sheet" id="sheet"><div class="sheet-bar"></div><div id="sheetBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   数据：来源《营运二部负责人-巡检表》，共 50 项，满分 100 分
+   评分规则：内容里但凡有不符合标准的，即不得分
+   ========================================================= */
+var DATA = [
+  { cat:'日常管理', groups:[ { name:'', items:[
+    { name:'开闭档检查表', req:'管理人员每日准时填写开闭档检查表，未出现漏填。', score:1 },
+    { name:'行为规范', req:'任何时间段不允许伙伴穿工服在门店周围公共场所抽烟、吃东西、婚闹、打游戏等影响品牌形象的行为。', score:1 },
+    { name:'行为规范', req:'客人可视范围内，不允许产生手插兜、坐着、躺着、抖腿等不雅行为及言语，不得使用手机用于与工作无关的事情。', score:1 }
+  ] } ] },
+
+  { cat:'服务流程', groups:[ { name:'', items:[
+    { name:'预定', req:'两询问：\n1、方便知道您晚上的用餐性质吗？家庭、商务或朋友聚会？（根据宴请性质针对性询问）\n-我们每天有限量菜品，需要帮您提前预留吗？\n-请问您有忌口或者特殊需求吗？\n-提前布置房间\n3、询问到店交通方式（指引路线-各门店自填）：\n地铁：', score:2 },
+    { name:'迎宾', req:'（迎宾、引领、入座的链条不能断）\n三个动作：冲上去、架起来、拎包\n大厅客人告知点菜区位置，话述：您好贵宾，我们点菜在这边哦，东西我帮您放在位子上，或者您一会过来点菜也可以哦。', score:2 },
+    { name:'引领', req:'一步三回头，聊天气，聊企业文化', score:2 },
+    { name:'入座', req:'拉椅让座，递菜单', score:1 },
+    { name:'问茶', req:'贵宾您好，我是今天的侍茶师**：\n熟客直接询问是否准备客人常喝的茶水\n1、我们招牌是2011年的福鼎老白茶，这款茶据现在有15年了，还有一款黑茶，选自湖南安化第39代传承人刘春琦老师监制，您平时有喜欢的茶品吗，可以帮您推荐一下\n2、如果您害怕影响睡眠，我们还有几款花茶供您选择\n3、功效型的还有黑茶如安化苻砖\n请稍等为您冲泡', score:3 },
+    { name:'问酒', req:'您好，先生 / 女士，欢迎来到逸道朝茶暮酒，我是餐厅的侍酒师 / 服务师 / 主管 / 经理xxx\n这是我们的酒单，为了凸显淮扬菜系的食材本味，让餐酒搭配相得益彰，我们以葡萄品种为线索编排，方便您选择。\n请问您今天想要喝什么类型的葡萄酒，需要我帮您推荐吗？\n如：什么菜配什么酒比较合适（详见餐酒搭配高感知）', score:3 },
+    { name:'送迎客茶', req:'迎客茶：推车送迎客茶（中午）\n话术：贵宾您好，我是侍茶师 xxx ，欢迎来到逸道朝茶暮酒用餐。\n这边为您呈上的是我们的迎客茶-桂花牡丹王\n我们选用的是广西的金桂和福鼎的白牡丹，桂花香气馥郁芬芳，白茶茶性温和，搭配我们的淮扬菜相得益彰。\n希望您能够喜欢！', score:2 },
+    { name:'点菜', req:'1、自我介绍：贵宾中午/晚上好，我是今天的服务师小吴，现在由我这您点菜，您有什么忌口吗？咱们今天几位？\n2、按照不同年龄段、不同消费客群提供相应的点菜模型（见文字版）', score:3 },
+    { name:'上茶', req:'1、贵宾您好，这是您点的**茶，这是****（茶介绍）好茶需要好水泡，我们甄选产自浙江安吉新鲜直送的山泉水，这款水的PH值7.5，水质软、活、甘、冽等因素，适合泡所有的茶，这边浓淡度合适吗（如果不合适按照客人喜好调整），希望您喜欢\n2、巡台及时添加茶水，公道杯不能沙水位不少于二分之一', score:2 },
+    { name:'上酒', req:'推车：\n话术：贵宾中午/晚上好，我是今天的侍酒师**，这是您点的**酒（酒展示及介绍），跟您点的**菜是最佳搭配，进行侍酒服务', score:2 },
+    { name:'上菜（招牌产品介绍）', req:'100%做到招牌、必点、时令菜产品介绍（见菜品介绍文件）', score:3 },
+    { name:'餐中服务', req:'按标准执行（见标准文件）', score:3 },
+    { name:'餐尾', req:'清台后（见客人还在聊天）主动上水果和小吃', score:2 },
+    { name:'客情', req:'根据不满意情况，兑现相应承诺（一定要添加微信）', score:2 },
+    { name:'结账', req:'核对账单无误进行结账，询问发票（添加微信）', score:1 },
+    { name:'送客', req:'送伴手礼开口笑', score:2 },
+    { name:'客户链接问候', req:'节假日、天气定时发送信息', score:2 }
+  ] } ] },
+
+  { cat:'核心层', groups:[
+    { name:'菜', items:[
+      { name:'原材料', req:'餐前小菜的摆放合理、美观。', score:2 },
+      { name:'原材料', req:'所展示的菜品新鲜、无枯叶、异味等情况出现。', score:2 },
+      { name:'菜品介绍', req:'基层员工菜品介绍抽问能够答上。', score:2 }
+    ] },
+    { name:'茶 / 酒', items:[
+      { name:'产品特点', req:'员工可以回答主推茶相关的抽问。', score:2 },
+      { name:'产品特点', req:'员工可以回答主推酒相关的抽问。', score:2 },
+      { name:'增值品', req:'增值品摆放整齐，为本阶段或重点售卖产品。', score:2 },
+      { name:'增值品', req:'增值品价签正确摆放，无漏摆、错摆。', score:2 },
+      { name:'增值品', req:'员工能够回答出当月主推增值品相关的抽问（规格，提成，介绍口码等）。', score:2 }
+    ] }
+  ] },
+
+  { cat:'外围层', groups:[
+    { name:'专业性', items:[
+      { name:'仪容仪表', req:'面容干净，刮胡子（男士），化淡妆（女士）、头发符合公司标准。', score:2 },
+      { name:'仪容仪表', req:'工牌佩戴正确，按照职级佩戴相关徽章。', score:2 },
+      { name:'仪容仪表', req:'仪容仪表符合标准（工服干净、整洁统一、无破损）。', score:2 },
+      { name:'行为仪态', req:'员工应避免客人在场时与其他同事谈论、聊天。', score:2 },
+      { name:'行为仪态', req:'员工能够在无需反复叮嘱的状态下专业有序的进行工作，并非无所事事闲逛。', score:2 }
+    ] },
+    { name:'及时性', items:[
+      { name:'待客', req:'如有客人在，餐厅员工和其他同事交流时是否关注到客人的存在，如向客人微笑、点头示意或主动询问客人需求。', score:2 },
+      { name:'待客', req:'如有客人入店，餐厅员工是否主动上前接待，杜绝爱答不理。', score:2 }
+    ] },
+    { name:'态度', items:[
+      { name:'员工状态', req:'员工能够主动打招呼，面带笑容，手势符合标准。', score:2 },
+      { name:'员工状态', req:'员工精神面貌佳，无懒散、懈怠状态。', score:2 },
+      { name:'企业文化', req:'员工企业文化抽问能够答上。', score:2 }
+    ] }
+  ] },
+
+  { cat:'外延层', groups:[
+    { name:'氛围', items:[
+      { name:'环境', req:'工作落台，物品摆放整齐无杂乱，工作柜内外清洁符合规范，无私人物品。', score:2 },
+      { name:'环境', req:'店内温度适宜，香薰气味，空气清新。', score:2 },
+      { name:'环境', req:'进店入口宽敞整洁，无杂物、障碍物堆积，方便顾客进出。', score:2 },
+      { name:'音乐', req:'背景音乐准时播放，并且音量适当，流畅。', score:2 },
+      { name:'卫生情况', req:'包间/大厅符合开档标准，餐具根据用餐人数补充且无污渍。', score:2 },
+      { name:'卫生情况', req:'地面无污渍、碎屑，绿植、花草维护良好，无积灰、无枯叶。', score:2 },
+      { name:'卫生情况', req:'卫生间一客一清', score:2 }
+    ] },
+    { name:'三感', items:[
+      { name:'情绪感', req:'小朋友玩具存量齐全；靠枕、披毯折叠存放无异味。', score:2 },
+      { name:'仪式感', req:'特殊宴请（生日、情侣等）装饰符合标准。', score:2 },
+      { name:'陌生感', req:'店内装饰（如插花、时令字画）及时更换，与季节相关。', score:2 }
+    ] }
+  ] },
+
+  { cat:'本月关注', groups:[ { name:'', items:[
+    { name:'水果', req:'摆盘、产品是否符合应季、清洁度、新鲜度', score:2 },
+    { name:'基本盘点菜逻辑', req:'按人群分类熟悉度（抽查2-3人）', score:2 }
+  ] } ] }
+];
+
+var BRANDS  = ['逸品淮扬','逸道·朝茶暮酒'];
+var STORES  = ['白玉兰店','渔人码头店','老市府店','恒隆店'];
+var PERIODS = ['午市','晚市'];
+
+/* ---------- 构建索引 ---------- */
+var ITEMS = [];   // {id, no, cat, catIdx, grp, name, req, score}
+DATA.forEach(function(c, ci){
+  c.groups.forEach(function(g, gi){
+    g.items.forEach(function(it, ii){
+      ITEMS.push({
+        id: 'i'+ci+'_'+gi+'_'+ii, no: ITEMS.length+1, cat: c.cat, catIdx: ci,
+        grp: g.name, name: it.name, req: it.req, score: it.score
+      });
+    });
+  });
+});
+var TOTAL = ITEMS.reduce(function(s,i){ return s+i.score; }, 0);
+var BY_ID = {}; ITEMS.forEach(function(i){ BY_ID[i.id] = i; });
+var CATS = DATA.map(function(c, ci){
+  return {
+    name: c.cat, idx: ci,
+    items: ITEMS.filter(function(i){ return i.catIdx===ci; }),
+    max: ITEMS.filter(function(i){ return i.catIdx===ci; }).reduce(function(s,i){ return s+i.score; },0)
+  };
+});
+
+/* ---------- 状态 ---------- */
+var LS = 'yy2b_inspection_v1';
+var blank = function(){
+  var d = new Date();
+  var iso = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return {
+    meta:{ brand:'', store:'', period:'', date:iso, person:'' },
+    answers:{}, todos:[], records:[], filter:'all'
+  };
+};
+var S = blank();
+try{
+  var raw = localStorage.getItem(LS);
+  if(raw){ var o = JSON.parse(raw); if(o && o.answers){ S = Object.assign(blank(), o);
+    S.meta = Object.assign(blank().meta, o.meta||{}); } }
+}catch(e){}
+
+var save = function(){
+  try{ localStorage.setItem(LS, JSON.stringify(S)); }
+  catch(e){ toast('存储空间不足，请删除部分照片或导出后清理'); }
+};
+
+/* ---------- 小工具 ---------- */
+var $  = function(q){ return document.querySelector(q); };
+var $$ = function(q){ return Array.prototype.slice.call(document.querySelectorAll(q)); };
+var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(m){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); };
+var toast = function(msg, ms){
+  var t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._tm); t._tm = setTimeout(function(){ t.classList.remove('on'); }, ms||2000);
+};
+var buzz = function(n){ try{ if(navigator.vibrate) navigator.vibrate(n||12); }catch(e){} };
+var nowStr = function(){ var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')
+    +' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+var ans = function(id){ if(!S.answers[id]) S.answers[id] = { r:'', note:'', photos:[] }; return S.answers[id]; };
+
+/* ---------- 统计 ---------- */
+function stat(){
+  var got=0, done=0, fails=[], passN=0;
+  ITEMS.forEach(function(it){
+    var a = S.answers[it.id];
+    if(a && a.r){ done++; if(a.r==='pass'){ got+=it.score; passN++; }
+      else if(a.r==='fail'){ fails.push(it); } }
+  });
+  return { got:got, done:done, passN:passN, fails:fails, total:ITEMS.length,
+           failScore: fails.reduce(function(s,i){ return s+i.score; },0) };
+}
+function catStat(c){
+  var got=0, done=0, fail=0;
+  c.items.forEach(function(it){
+    var a=S.answers[it.id];
+    if(a&&a.r){ done++; if(a.r==='pass') got+=it.score; else fail++; }
+  });
+  return { got:got, done:done, fail:fail, n:c.items.length };
+}
+
+/* ---------- 顶部 ---------- */
+function renderTop(){
+  var st = stat();
+  var pct = TOTAL ? Math.round(st.got/TOTAL*100) : 0;
+  $('#ring').style.setProperty('--p', pct);
+  $('#ringNum').textContent = st.got;
+  $('#hStore').textContent = S.meta.store || '未选择';
+  $('#hDone').textContent = st.done;
+  $('#hFail').textContent = st.fails.length;
+  $('#hBar').style.width = Math.round(st.done/ITEMS.length*100)+'%';
+  var lt = $('#listTotal'); if(lt) lt.textContent = st.got;
+}
+
+/* ---------- 巡检列表 ---------- */
+function renderList(){
+  var html = '';
+  CATS.forEach(function(c){
+    var cs = catStat(c);
+    html += '<section class="sec" id="sec-'+c.idx+'">';
+    html += '<div class="sec-head"><div class="n">'+esc(c.name)+' <em>'+cs.got+' / '+c.max+' 分</em></div>';
+    html += '<button class="quick" data-cat="'+c.idx+'">全部符合</button></div>';
+    DATA[c.idx].groups.forEach(function(g, gi){
+      if(g.name) html += '<div class="grp-name">'+esc(g.name)+'</div>';
+      else html += '<div class="grp"></div>';
+      g.items.forEach(function(it, ii){
+        var id='i'+c.idx+'_'+gi+'_'+ii;
+        var item = BY_ID[id];
+        var a = S.answers[id]||{r:'',note:'',photos:[]};
+        var cls = a.r==='pass'?'pass':(a.r==='fail'?'fail':'');
+        html += '<div class="item '+cls+'" data-id="'+id+'">'
+          + '<div class="item-h">'
+          +   '<div class="item-idx">'+item.no+'</div>'
+          +   '<div class="item-b">'
+          +     '<div class="item-name">'+esc(it.name)+'</div>'
+          +     '<div class="item-req">'+esc(it.req)+'</div>'
+          +   '</div>'
+          +   '<div class="item-sc">'+it.score+'分</div>'
+          + '</div>'
+          + '<div class="btns">'
+          +   '<button class="b-ok'+(a.r==='pass'?' on':'')+'" data-act="pass">✓ 符合标准</button>'
+          +   '<button class="b-no'+(a.r==='fail'?' on':'')+'" data-act="fail">✕ 不符合</button>'
+          + '</div>'
+          + '<div class="detail'+(a.r==='fail'?' on':'')+'">'
+          +   '<textarea data-role="note" placeholder="填写不符合的具体情况、涉及人员/区域（作为整改待办依据）">'+esc(a.note)+'</textarea>'
+          +   '<div class="photos">'
+          +     (a.photos||[]).map(function(p,pi){
+                  return '<div class="ph"><img src="'+p+'"><span data-del="'+pi+'">×</span></div>'; }).join('')
+          +     '<label class="ph-add">+ 拍照<br>留证<input type="file" accept="image/*" capture="environment" data-role="photo"></label>'
+          +   '</div>'
+          + '</div>'
+          + '</div>';
+      });
+    });
+    html += '</section>';
+  });
+  $('#list').innerHTML = html;
+  var st = stat();
+  var lt = $('#listTotal'); if(lt) lt.textContent = st.got;
+
+  var j = '';
+  CATS.forEach(function(c){
+    var cs = catStat(c);
+    j += '<button data-jump="'+c.idx+'" class="'+(cs.done===cs.n?'done':'')+'">'+esc(c.name)+' <b>'+cs.got+'</b></button>';
+  });
+  $('#catJump').innerHTML = j;
+}
+
+/* ---------- 报告 ---------- */
+function levelText(p){
+  if(p>=95) return '优秀 · 标杆门店水平';
+  if(p>=90) return '良好 · 细节仍需打磨';
+  if(p>=80) return '合格 · 存在明显待改进项';
+  if(p>=60) return '待提升 · 多项标准未落地';
+  return '不合格 · 需全面整改';
+}
+function renderReport(){
+  var st = stat();
+  var pct = st.done? Math.round(st.got/TOTAL*100) : 0;
+  $('#rScore').textContent = st.got;
+  $('#rRate').textContent = pct+'%';
+  $('#rDone').textContent = st.done+'/'+ITEMS.length;
+  $('#rFail').textContent = st.fails.length;
+  $('#rLevel').textContent = st.done===0 ? '尚未开始评分' : ('得分率 '+pct+'%　' + levelText(pct));
+
+  /* 分类得分条 */
+  var bars='';
+  CATS.forEach(function(c){
+    var cs = catStat(c);
+    var p = c.max? Math.round(cs.got/c.max*100):0;
+    var col = p>=90?'linear-gradient(90deg,#1f7a55,#41a97b)':(p>=70?'linear-gradient(90deg,#b3893f,#d8b062)':'linear-gradient(90deg,#c0392b,#e06a58)');
+    bars += '<div class="bar"><div class="bar-t"><b>'+esc(c.name)+'</b><span>'+cs.got+' / '+c.max+' 分　'+(cs.done<cs.n?('未评 '+(cs.n-cs.done)+' 项'):(cs.fail?('不合格 '+cs.fail+' 项'):'合格'))+'</span></div>'
+      + '<div class="bar-bg"><i style="width:'+p+'%;background:'+col+'"></i></div></div>';
+  });
+  $('#rBars').innerHTML = bars;
+
+  /* 问题分析 */
+  $('#rAnalysis').innerHTML = analysis(st);
+
+  /* 不符合明细 */
+  $('#rFailCnt').textContent = st.fails.length + ' 项';
+  if(!st.fails.length){
+    $('#rFailList').innerHTML = '<div class="empty" style="padding:26px 10px"><span class="ic">✓</span>'+(st.done? '本次巡检暂未发现不符合项' : '还没有评分数据，先去「巡检」页开始评分吧')+'</div>';
+    $('#rFailCard').style.display = st.done? '' : 'none';
+  }else{
+    $('#rFailCard').style.display='';
+    $('#rFailList').innerHTML = st.fails.map(function(it){
+      var a = S.answers[it.id]||{};
+      return '<div class="fail-line"><span class="tag">'+esc(it.cat)+'</span><div class="tx"><b>'+esc(it.name)+(it.grp?(' · '+esc(it.grp)):'')+'</b>'
+        + (a.note? '<em>'+esc(a.note)+'</em>':'<em style="color:#c0392b">未填写问题描述</em>')
+        + '</div><span class="cut">-'+it.score+'</span></div>';
+    }).join('');
+  }
+}
+function analysis(st){
+  if(st.done===0) return '<p>完成评分后，这里会自动生成问题分析：扣分集中环节、主要问题项、以及整改建议。</p>';
+  if(!st.fails.length) return '<p>本次巡检 <b>'+st.done+'</b> 项已评全部符合标准，得分 <b>'+st.got+'</b> 分。门店执行标准到位，建议保持并沉淀为标杆动作。</p>';
+
+  /* 分类扣分排序 */
+  var byCat = CATS.map(function(c){
+    var f = st.fails.filter(function(x){ return x.catIdx===c.idx; });
+    return { name:c.name, n:f.length, cut:f.reduce(function(s,i){return s+i.score;},0) };
+  }).filter(function(x){ return x.n>0; }).sort(function(a,b){ return b.cut-a.cut; });
+
+  /* 扣分项排序 */
+  var top = st.fails.slice().sort(function(a,b){ return b.score-a.score; }).slice(0,5);
+
+  var h = '';
+  h += '<p>本次巡检共发现 <span class="warn">'+st.fails.length+' 项不符合</span>，合计扣 <span class="warn">'+st.failScore+' 分</span>，'
+     + '实际得分 <b>'+st.got+' / '+TOTAL+'</b>，得分率 <b>'+Math.round(st.got/TOTAL*100)+'%</b>。</p>';
+
+  h += '<p><b>问题分布：</b>';
+  h += byCat.map(function(x){ return x.name+' '+x.n+' 项（扣 '+x.cut+' 分）'; }).join('；') + '。';
+  var worst = byCat[0];
+  if(worst) h += '问题最集中在 <b>'+worst.name+'</b>，是本次整改的第一优先级。';
+  h += '</p>';
+
+  h += '<p><b>高扣分环节：</b>'
+     + top.map(function(t){ return t.name+'（'+t.score+'分）'; }).join('、')
+     + (st.fails.length>5? ' 等，建议优先安排现场演示与一对一带教。' : '，建议安排现场演示与一对一带教。')
+     + '</p>';
+
+  /* 建议 */
+  var sug = [];
+  if(byCat.some(function(x){ return x.name==='服务流程'; })) sug.push('服务流程类问题需在班前会复训话术脚本，并做角色扮演通关');
+  if(byCat.some(function(x){ return x.name==='外围层'; })) sug.push('员工仪容仪表与主动服务意识纳入每日开档自检，责任到岗');
+  if(byCat.some(function(x){ return x.name==='核心层'; })) sug.push('菜品/茶酒/增值品知识抽问形成周清单，员工过关后方可上桌服务');
+  if(byCat.some(function(x){ return x.name==='外延层'; })) sug.push('环境与卫生问题当日闭环，指定区域责任人并拍照留证');
+  if(byCat.some(function(x){ return x.name==='日常管理'; })) sug.push('开闭档表与行为规范由值班管理人员每日核查签字');
+  if(!sug.length) sug.push('按不符合明细逐项落实责任人，整改后拍照回传并复查确认');
+  h += '<p><b>整改建议：</b></p><p>' + sug.map(function(s,i){ return (i+1)+'、'+s; }).join('<br>') + '</p>';
+  h += '<p style="color:#7c8b88;font-size:12px">提示：点击下方「保存本次巡检并生成待办」，系统会把以上不符合项自动转为待办任务，可指派责任人与整改期限。</p>';
+  return h;
+}
+
+/* ---------- 待办 ---------- */
+function renderTodos(){
+  var f = S.filter||'all';
+  var list = S.todos.filter(function(t){ return f==='all'||t.status===f; });
+  var c = { all:S.todos.length,
+            pending:S.todos.filter(function(t){return t.status==='pending';}).length,
+            doing:S.todos.filter(function(t){return t.status==='doing';}).length,
+            done:S.todos.filter(function(t){return t.status==='done';}).length };
+  $('#cAll').textContent=c.all; $('#cPend').textContent=c.pending;
+  $('#cDoing').textContent=c.doing; $('#cDone').textContent=c.done;
+  $$('#todoFilters button').forEach(function(b){ b.classList.toggle('on', b.dataset.f===f); });
+
+  if(!list.length){
+    $('#todoList').innerHTML = '<div class="empty"><span class="ic">☑</span>暂无待办任务<br>在「得分报告」页点击“保存本次巡检并生成待办”即可自动创建</div>';
+    return;
+  }
+  var order = { pending:0, doing:1, done:2 };
+  list = list.slice().sort(function(a,b){
+    if(order[a.status]!==order[b.status]) return order[a.status]-order[b.status];
+    return b.score-a.score;
+  });
+  $('#todoList').innerHTML = list.map(function(t){
+    var cls = t.status==='doing'?'doing':(t.status==='done'?'done':'');
+    var pill = t.status==='pending'?'<span class="pill p">待处理</span>':(t.status==='doing'?'<span class="pill d">整改中</span>':'<span class="pill o">已完成</span>');
+    return '<div class="todo '+cls+'" data-tid="'+t.id+'">'
+      + '<div class="todo-h"><div><b>'+esc(t.name)+(t.grp?(' · '+esc(t.grp)):'')+'</b>'
+      +   '<div class="todo-src">'+esc(t.cat)+'　·　扣 '+t.score+' 分　·　'+esc(t.store||'未填门店')+'　·　'+esc(t.date||'')+'</div></div>'+pill+'</div>'
+      + (t.note? '<div class="todo-note">'+esc(t.note)+'</div>' : '')
+      + '<div class="todo-ctl">'
+      +   '<select data-t="status">'
+      +     '<option value="pending"'+(t.status==='pending'?' selected':'')+'>待处理</option>'
+      +     '<option value="doing"'+(t.status==='doing'?' selected':'')+'>整改中</option>'
+      +     '<option value="done"'+(t.status==='done'?' selected':'')+'>已完成</option>'
+      +   '</select>'
+      +   '<input type="text" data-t="owner" placeholder="责任人" value="'+esc(t.owner)+'">'
+      +   '<input type="date" data-t="due" value="'+esc(t.due||'')+'" style="flex:0 0 132px">'
+      + '</div></div>';
+  }).join('');
+}
+
+/* ---------- 报告库 ---------- */
+var recFilter = { store:'' };
+function renderRecords(){
+  var all = S.records.slice().reverse();
+  $('#recCnt').textContent = all.length + ' 份';
+
+  /* 库统计 */
+  if(all.length){
+    var avg = Math.round(all.reduce(function(s,r){ return s+r.got; },0)/all.length);
+    var best = Math.max.apply(null, all.map(function(r){ return r.got; }));
+    $('#libStats').textContent = '平均 '+avg+' 分 · 最高 '+best+' 分';
+  }else{
+    $('#libStats').textContent = '完成巡检并保存后，报告会自动存入这里';
+  }
+
+  /* 门店筛选 chips */
+  var stores = [];
+  S.records.forEach(function(r){ if(r.store && stores.indexOf(r.store)<0) stores.push(r.store); });
+  $('#libStores').innerHTML =
+    '<span class="chip'+(recFilter.store===''?' on':'')+'" data-ls="">全部</span>' +
+    stores.map(function(s){
+      return '<span class="chip'+(recFilter.store===s?' on':'')+'" data-ls="'+esc(s)+'">'+esc(s)+'</span>';
+    }).join('');
+
+  var list = all.filter(function(r){ return !recFilter.store || r.store===recFilter.store; });
+  if(!list.length){
+    $('#recList').innerHTML = '<div class="empty" style="padding:26px 10px"><span class="ic">📚</span>'
+      + (all.length? '该门店暂无报告' : '暂无巡检报告<br>点击「重新开始新巡检」或保存巡检后自动入库') + '</div>';
+    return;
+  }
+  $('#recList').innerHTML = list.map(function(r){
+    var pct = Math.round(r.got/TOTAL*100);
+    return '<div class="rec" data-rid="'+r.id+'">'
+      + '<div class="rec-h"><div><b>'+esc(r.store||'未填门店')+'</b>'
+      +   '<div class="rec-m">'+esc(r.brand||'')+(r.period?('　'+esc(r.period)):'')+'<br>'+esc(r.date||'')+(r.person?('　巡检人：'+esc(r.person)):'')+'</div></div>'
+      +   '<div class="sc">'+r.got+'<small>/100</small></div></div>'
+      + '<div class="rec-m">得分率 '+pct+'%　·　不符合 '+r.fails+' 项　·　扣 '+r.cut+' 分　·　归档于 '+esc(r.savedAt||'—')+'</div>'
+      + '<div class="rec-a"><button data-r="view">查看报告</button><button data-r="pdf">下载PDF</button><button data-r="copy">复制</button><button data-r="del" style="color:#c0392b">删除</button></div>'
+      + '</div>';
+  }).join('');
+}
+$('#libStores').addEventListener('click', function(e){
+  var c = e.target.closest('.chip'); if(!c) return;
+  recFilter.store = c.dataset.ls||'';
+  renderRecords(); buzz();
+});
+
+/* ---------- 渲染总入口 ---------- */
+function render(){
+  renderTop(); renderList(); renderReport(); renderTodos(); renderRecords(); save();
+}
+
+/* ---------- 基础信息 chips ---------- */
+function renderMeta(){
+  $('#chipBrand').innerHTML = BRANDS.map(function(b){
+    return '<span class="chip'+(S.meta.brand===b?' on':'')+'" data-k="brand" data-v="'+esc(b)+'">'+esc(b)+'</span>'; }).join('');
+  $('#chipStore').innerHTML = STORES.map(function(b){
+    return '<span class="chip'+(S.meta.store===b?' on':'')+'" data-k="store" data-v="'+esc(b)+'">'+esc(b)+'</span>'; }).join('');
+  $('#chipPeriod').innerHTML = PERIODS.map(function(b){
+    return '<span class="chip'+(S.meta.period===b?' on':'')+'" data-k="period" data-v="'+esc(b)+'">'+esc(b)+'</span>'; }).join('');
+  $('#inDate').value = S.meta.date||'';
+  $('#inPerson').value = S.meta.person||'';
+  $('#hStore').textContent = S.meta.store||'未选择';
+}
+
+/* ---------- 事件 ---------- */
+/* 顶部 chips / 输入 */
+document.addEventListener('click', function(e){
+  var chip = e.target.closest('.chip');
+  if(chip){
+    var k = chip.dataset.k, v = chip.dataset.v;
+    if(!k) return; /* 报告库筛选等非表单 chips 不走这里 */
+    S.meta[k] = (S.meta[k]===v) ? '' : v;
+    renderMeta(); renderTop(); save(); buzz();
+    return;
+  }
+});
+$('#inDate').addEventListener('change', function(){ S.meta.date=this.value; save(); });
+$('#inPerson').addEventListener('input', function(){ S.meta.person=this.value; save(); });
+$('#toggleMeta').addEventListener('click', function(){
+  var b=$('#metaBody'), hide = b.style.display!=='none';
+  b.style.display = hide?'none':''; this.textContent = hide?'展开':'收起';
+});
+
+/* 评分交互 */
+$('#list').addEventListener('click', function(e){
+  var jump = e.target.closest('[data-jump]');
+  if(jump){ var t=$('#sec-'+jump.dataset.jump); if(t) t.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+
+  var quick = e.target.closest('.quick');
+  if(quick){
+    var ci = +quick.dataset.cat;
+    if(!confirm('将「'+CATS[ci].name+'」下所有未评分的项目标记为符合标准？\n（已有评分保持不变）')) return;
+    ITEMS.filter(function(i){ return i.catIdx===ci; }).forEach(function(it){
+      var a = ans(it.id); if(a.r!=='fail'){ a.r='pass'; }
+    });
+    renderList(); renderTop(); renderReport(); save(); buzz(20); toast('已批量标记为符合');
+    return;
+  }
+
+  var del = e.target.closest('[data-del]');
+  if(del){
+    var box = del.closest('.item'), id0 = box.dataset.id, a0 = ans(id0);
+    a0.photos.splice(+del.dataset.del,1); renderList(); save(); return;
+  }
+
+  var btn = e.target.closest('.btns button');
+  if(btn){
+    var box2 = e.target.closest('.item'); if(!box2) return;
+    var id = box2.dataset.id, a = ans(id), act = btn.dataset.act;
+    if(a.r===act){ a.r=''; } else { a.r = act; }
+    buzz(a.r==='fail'?[15,40,15]:12);
+    renderList(); renderTop(); renderReport(); save();
+    if(act==='fail' && a.r==='fail'){
+      var ta = box2.querySelector('textarea'); if(ta) setTimeout(function(){ ta.focus(); },80);
+    }
+    return;
+  }
+});
+
+/* 备注 / 照片 */
+$('#list').addEventListener('input', function(e){
+  var ta = e.target.closest('textarea[data-role=note]'); if(!ta) return;
+  var box = ta.closest('.item'); ans(box.dataset.id).note = ta.value; save();
+  renderReport();
+});
+$('#list').addEventListener('change', function(e){
+  var f = e.target.closest('input[data-role=photo]'); if(!f || !f.files || !f.files[0]) return;
+  var box = f.closest('.item'), id = box.dataset.id, a = ans(id);
+  if(a.photos.length>=3){ toast('每项最多 3 张照片'); f.value=''; return; }
+  compress(f.files[0], function(data){
+    a.photos.push(data); renderList(); save(); toast('已添加照片');
+  });
+  f.value='';
+});
+function compress(file, cb){
+  var r = new FileReader();
+  r.onload = function(ev){
+    var img = new Image();
+    img.onload = function(){
+      var max=880, w=img.width, h=img.height;
+      if(w>h && w>max){ h=Math.round(h*max/w); w=max; }
+      else if(h>=w && h>max){ w=Math.round(w*max/h); h=max; }
+      var c=document.createElement('canvas'); c.width=w; c.height=h;
+      var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,w,h); g.drawImage(img,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',0.62));
+    };
+    img.onerror=function(){ toast('图片读取失败'); };
+    img.src = ev.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+/* 底部导航 */
+$$('nav.tabbar button').forEach(function(b){
+  b.addEventListener('click', function(){
+    $$('nav.tabbar button').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    $$('.view').forEach(function(v){ v.classList.remove('on'); });
+    $('#v-'+b.dataset.v).classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+    if(b.dataset.v==='report') renderReport();
+    if(b.dataset.v==='todo') renderTodos();
+    if(b.dataset.v==='records') renderRecords();
+  });
+});
+
+/* 待办筛选与编辑 */
+$('#todoFilters').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  S.filter=b.dataset.f; renderTodos(); save();
+});
+$('#todoList').addEventListener('change', function(e){
+  var t=e.target.closest('.todo'); if(!t) return;
+  var todo = S.todos.filter(function(x){ return x.id===t.dataset.tid; })[0]; if(!todo) return;
+  var k=e.target.dataset.t; if(!k) return;
+  todo[k]=e.target.value; save(); renderTodos(); renderTop();
+  if(k==='status') toast('已更新为「'+e.target.selectedOptions[0].textContent+'」');
+});
+$('#todoList').addEventListener('input', function(e){
+  var t=e.target.closest('.todo'); if(!t) return;
+  var todo = S.todos.filter(function(x){ return x.id===t.dataset.tid; })[0]; if(!todo) return;
+  var k=e.target.dataset.t; if(!k) return;
+  todo[k]=e.target.value; save();
+});
+
+/* 记录操作 */
+$('#recList').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  var rid=e.target.closest('.rec').dataset.rid;
+  var rec = S.records.filter(function(r){ return r.id===rid; })[0]; if(!rec) return;
+  if(b.dataset.r==='view') openRec(rec);
+  if(b.dataset.r==='pdf') printPDF(rec);
+  if(b.dataset.r==='copy') copyText(recText(rec),'报告已复制');
+  if(b.dataset.r==='del'){
+    if(confirm('删除这条巡检记录？该操作不可恢复。')){
+      S.records = S.records.filter(function(r){ return r.id!==rid; });
+      renderRecords(); save(); toast('已删除');
+    }
+  }
+});
+
+/* 报告页动作 */
+$('#btnSave').addEventListener('click', function(){
+  var st = stat();
+  if(st.done===0){ toast('还没有评分，请先完成巡检评分'); return; }
+  if(!S.meta.store){ if(!confirm('还没有选择门店，仍要保存吗？')) return; }
+  var rec = snapshot();
+  S.records.push(rec);
+  /* 生成/更新待办 */
+  var added=0, updated=0;
+  st.fails.forEach(function(it){
+    var a = S.answers[it.id]||{};
+    var ex = S.todos.filter(function(t){ return t.itemId===it.id && t.status!=='done'; })[0];
+    if(ex){
+      ex.note=a.note||''; ex.score=it.score; ex.recId=rec.id;
+      ex.store=rec.store; ex.date=rec.date; updated++;
+    }else{
+      S.todos.push({
+        id:'t'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+        itemId:it.id, recId:rec.id, cat:it.cat, grp:it.grp, name:it.name, score:it.score,
+        note:a.note||'', owner:'', due:'', status:'pending',
+        store:rec.store, brand:rec.brand, date:rec.date,
+        createdAt:nowStr()
+      });
+      added++;
+    }
+  });
+  S.processedAt = rec.id;
+  render(); save();
+  toast('已保存：得分 '+st.got+' 分，新增待办 '+added+' 项');
+  setTimeout(function(){ $$('nav.tabbar button')[2].click(); }, 400);
+});
+$('#btnCopy').addEventListener('click', function(){ copyText(nowText(),'巡检报告已复制，可直接粘贴到微信'); });
+$('#btnCsv').addEventListener('click', function(){
+  var rows = [['序号','分类','子类','检查项','检查内容','分值','结果','得分','问题描述']];
+  ITEMS.forEach(function(it){
+    var a = S.answers[it.id]||{};
+    rows.push([it.no, it.cat, it.grp||'', it.name, it.req.replace(/\n/g,' '), it.score,
+      a.r==='pass'?'符合':(a.r==='fail'?'不符合':'未评'), a.r==='pass'?it.score:0, (a.note||'').replace(/\n/g,' ')]);
+  });
+  var st=stat();
+  rows.push([]); rows.push(['总得分', st.got+' / '+TOTAL, '得分率', Math.round(st.got/TOTAL*100)+'%','不符合项', st.fails.length]);
+  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+  download('\ufeff'+csv, '巡检明细_'+fileTag()+'.csv', 'text/csv');
+});
+$('#btnJson').addEventListener('click', function(){
+  download(JSON.stringify({meta:S.meta, answers:S.answers, todos:S.todos, records:S.records}, null, 2),
+    '巡检数据_'+fileTag()+'.json', 'application/json');
+});
+$('#btnImport').addEventListener('click', function(){
+  var inp = document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange = function(){
+    var f=inp.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(ev){
+      try{
+        var o=JSON.parse(ev.target.result);
+        if(o.records) S.records = S.records.concat(o.records);
+        if(o.todos) S.todos = S.todos.concat(o.todos);
+        render(); toast('导入成功');
+      }catch(err){ toast('文件格式不正确'); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+});
+$('#btnReset').addEventListener('click', function(){
+  var st = stat();
+  var msg = st.done>0
+    ? '重新开始前，本次巡检（得分 '+st.got+' 分）将自动存入「报告库」，然后清空评分与门店信息，开始新的门店巡检。\n\n· 报告库与整改待办均会保留\n确定继续吗？'
+    : '将清空本次巡检内容，开始新的门店巡检。确定吗？';
+  if(!confirm(msg)) return;
+  var rec = archiveCurrent();
+  S.answers = {};
+  S.meta = Object.assign(S.meta, { brand:'', store:'', period:'', person:'' });
+  recFilter.store = '';
+  renderMeta(); render();
+  $$('nav.tabbar button')[0].click();
+  window.scrollTo({top:0});
+  toast(rec ? ('本次报告（'+rec.got+' 分）已存入报告库，可开始新巡检') : '已清空，可开始新巡检');
+});
+
+/* 归档：把当前巡检快照存入报告库（内容无变化时不重复入库），返回入库的记录或 null */
+function archiveCurrent(){
+  var st = stat();
+  if(st.done===0) return null;
+  var cand = snapshot();
+  var last = S.records[S.records.length-1];
+  if(last && last.date===cand.date && last.store===cand.store
+     && JSON.stringify(last.answers)===JSON.stringify(cand.answers)){
+    return last; /* 与最近一次入库内容相同，不重复存 */
+  }
+  S.records.push(cand);
+  return cand;
+}
+
+$('#btnArchive').addEventListener('click', function(){
+  var st = stat();
+  if(st.done===0){ toast('还没有评分，先去巡检页完成评分'); return; }
+  if(!S.meta.store){ if(!confirm('还没有选择门店，仍要存入报告库吗？')) return; }
+  var rec = archiveCurrent();
+  /* 同步生成待办，保证整改不遗漏 */
+  var added=0;
+  st.fails.forEach(function(it){
+    var a = S.answers[it.id]||{};
+    var ex = S.todos.filter(function(t){ return t.itemId===it.id && t.status!=='done'; })[0];
+    if(!ex){
+      S.todos.push({
+        id:'t'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+        itemId:it.id, recId:rec.id, cat:it.cat, grp:it.grp, name:it.name, score:it.score,
+        note:a.note||'', owner:'', due:'', status:'pending',
+        store:rec.store, brand:rec.brand, date:rec.date, createdAt:nowStr()
+      });
+      added++;
+    }
+  });
+  S.answers = {};
+  S.meta = Object.assign(S.meta, { brand:'', store:'', period:'', person:'' });
+  recFilter.store = '';
+  renderMeta(); render();
+  $$('nav.tabbar button')[0].click();
+  window.scrollTo({top:0});
+  toast('报告已入报告库（'+rec.got+' 分'+(added?('，新增待办 '+added+' 项'):'')+'），可开始新巡检');
+});
+
+/* 导出整个报告库 */
+$('#btnLibExport').addEventListener('click', function(){
+  if(!S.records.length){ toast('报告库还是空的'); return; }
+  download(JSON.stringify({ exportedAt:nowStr(), records:S.records, todos:S.todos }, null, 2),
+    '巡检报告库_'+fileTag()+'.json', 'application/json');
+});
+
+/* ---------- 报告文本 ---------- */
+function nowText(){
+  var st=stat(), pct=Math.round(st.got/TOTAL*100);
+  var L=[];
+  L.push('【营运二部 · 门店巡检报告】');
+  L.push('品牌：'+(S.meta.brand||'—'));
+  L.push('门店：'+(S.meta.store||'—')+(S.meta.period?('　时段：'+S.meta.period):''));
+  L.push('巡检日期：'+(S.meta.date||'—')+(S.meta.person?('　巡检人：'+S.meta.person):''));
+  L.push('得分：'+st.got+' / '+TOTAL+' 分（得分率 '+pct+'%）');
+  L.push('已评 '+st.done+'/'+ITEMS.length+' 项　不符合 '+st.fails.length+' 项　扣 '+st.failScore+' 分');
+  L.push('');
+  L.push('— 分类得分 —');
+  CATS.forEach(function(c){ var cs=catStat(c); L.push(c.name+'：'+cs.got+' / '+c.max+' 分'); });
+  if(st.fails.length){
+    L.push('');
+    L.push('— 不符合明细（共 '+st.fails.length+' 项）—');
+    st.fails.forEach(function(it,i){
+      var a=S.answers[it.id]||{};
+      L.push((i+1)+'. ['+it.cat+(it.grp?('·'+it.grp):'')+'] '+it.name+'（扣'+it.score+'分）');
+      if(a.note) L.push('   问题：'+a.note);
+    });
+  }
+  L.push('');
+  L.push('— 待办事项 —');
+  var op = S.todos.filter(function(t){ return t.status!=='done'; });
+  if(op.length){ op.forEach(function(t,i){ L.push((i+1)+'. '+t.name+'（扣'+t.score+'分）'+(t.owner?('　责任人：'+t.owner):'')+(t.due?('　期限：'+t.due):'')); }); }
+  else L.push('暂无待办');
+  L.push('');
+  L.push('评分标准：内容里但凡有不符合标准的，即不得分。');
+  return L.join('\n');
+}
+function recText(r){
+  var L=[];
+  L.push('【营运二部 · 门店巡检报告】');
+  L.push('品牌：'+(r.brand||'—'));
+  L.push('门店：'+(r.store||'—')+(r.period?('　时段：'+r.period):''));
+  L.push('巡检日期：'+(r.date||'—')+(r.person?('　巡检人：'+r.person):''));
+  L.push('得分：'+r.got+' / '+TOTAL+' 分（得分率 '+Math.round(r.got/TOTAL*100)+'%）');
+  L.push('已评 '+r.done+'/'+ITEMS.length+' 项　不符合 '+r.fails+' 项　扣 '+r.cut+' 分');
+  if(r.failList && r.failList.length){
+    L.push('');
+    L.push('— 不符合明细 —');
+    r.failList.forEach(function(f,i){ L.push((i+1)+'. ['+f.cat+'] '+f.name+'（扣'+f.score+'分）'+(f.note?('　'+f.note):'')); });
+  }
+  return L.join('\n');
+}
+function snapshot(){
+  var st=stat();
+  return {
+    id:'r'+Date.now(), brand:S.meta.brand, store:S.meta.store, period:S.meta.period,
+    date:S.meta.date, person:S.meta.person, savedAt:nowStr(),
+    got:st.got, done:st.done, fails:st.fails.length, cut:st.failScore,
+    cats:CATS.map(function(c){ return {name:c.name, got:catStat(c).got, max:c.max}; }),
+    failList:st.fails.map(function(it){ var a=S.answers[it.id]||{}; return {cat:it.cat, grp:it.grp, name:it.name, score:it.score, note:a.note||''}; }),
+    answers:JSON.parse(JSON.stringify(S.answers))
+  };
+}
+function openRec(r){
+  var sheet=$('#sheet'), body=$('#sheetBody');
+  var h='<h3>'+esc(r.store||'巡检详情')+' <span style="font-size:13px;color:#b3893f">'+r.got+'/100</span></h3>';
+  h+='<div class="hint" style="margin-bottom:12px">'+esc(r.date||'')+(r.person?('　巡检人：'+esc(r.person)):'')+(r.period?('　'+esc(r.period)):'')+'</div>';
+  h+='<div class="kpis" style="margin-bottom:14px"><div class="kpi"><b>'+r.got+'</b><span>得分</span></div>'
+   + '<div class="kpi"><b>'+Math.round(r.got/TOTAL*100)+'%</b><span>得分率</span></div>'
+   + '<div class="kpi"><b style="color:#c0392b">'+r.fails+'</b><span>不符合项</span></div></div>';
+  h+='<div class="bars">'+r.cats.map(function(c){
+      var p=Math.round(c.got/c.max*100);
+      return '<div class="bar"><div class="bar-t"><b>'+esc(c.name)+'</b><span>'+c.got+' / '+c.max+'</span></div><div class="bar-bg"><i style="width:'+p+'%"></i></div></div>';
+    }).join('')+'</div>';
+  if(r.failList && r.failList.length){
+    h+='<div style="margin-top:16px;font-size:13px;font-weight:700;color:#b3893f">不符合明细</div>';
+    h+=r.failList.map(function(f){
+      return '<div class="fail-line"><span class="tag">'+esc(f.cat)+'</span><div class="tx"><b>'+esc(f.name)+'</b>'+(f.note?('<em>'+esc(f.note)+'</em>'):'')+'</div><span class="cut">-'+f.score+'</span></div>';
+    }).join('');
+  }
+  h+='<div style="display:flex;gap:9px;margin-top:16px"><button class="btn-ghost" id="recPdf" style="margin:0">下载 PDF</button>'
+   + '<button class="btn-ghost" id="recCopy" style="margin:0">复制报告</button>'
+   + '<button class="btn-ghost" id="recClose" style="margin:0">关闭</button></div>';
+  body.innerHTML=h;
+  sheet.classList.add('on'); $('#mask').classList.add('on');
+  $('#recPdf').onclick=function(){ printPDF(r); };
+  $('#recCopy').onclick=function(){ copyText(recText(r),'报告已复制'); };
+  $('#recClose').onclick=closeSheet;
+}
+function closeSheet(){ $('#sheet').classList.remove('on'); $('#mask').classList.remove('on'); }
+$('#mask').addEventListener('click', closeSheet);
+
+/* ---------- PDF 报告（打印版） ---------- */
+var PRINT_CSS = ''
+ +'@page{size:A4;margin:12mm 9mm}'
+ +'*{box-sizing:border-box}'
+ +'body{font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;color:#1b2a29;font-size:10.5px;margin:0;line-height:1.5}'
+ +'h1{font-size:17px;margin:0;text-align:center;letter-spacing:1.5px}'
+ +'.hd .meta{text-align:center;font-size:11px;color:#3d4f4d;margin-top:5px}'
+ +'.score{margin:10px 0;padding:8px 12px;background:#f2f5f4;border:1px solid #ccd9d5;border-radius:6px;font-size:12px}'
+ +'.score b{font-size:17px;color:#0f3e3c}'
+ +'.score span{margin-left:12px;color:#3d4f4d}'
+ +'h2{font-size:12.5px;margin:15px 0 6px;padding-left:7px;border-left:3px solid #b3893f}'
+ +'table{width:100%;border-collapse:collapse;table-layout:fixed}'
+ +'th,td{border:1px solid #9fb3ae;padding:3.5px 5px;vertical-align:top;font-size:10px;word-wrap:break-word}'
+ +'thead{display:table-header-group}'
+ +'th{background:#e8efec;font-weight:700;text-align:center}'
+ +'tr{page-break-inside:avoid}'
+ +'td.band{background:#dfeae6;font-weight:700;font-size:11px}'
+ +'td.c{text-align:center}'
+ +'td.b{font-weight:700;text-align:center}'
+ +'td.ok{color:#1f7a55;font-weight:700;text-align:center}'
+ +'td.bad{color:#c0392b;font-weight:700;text-align:center}'
+ +'td.w{height:26px}'
+ +'.phs img{width:72px;height:54px;object-fit:cover;border:1px solid #bbb;margin:3px 4px 0 0;page-break-inside:avoid}'
+ +'.ft{margin-top:14px;font-size:10.5px;color:#333}'
+ +'.ft .sig{margin-top:24px}'
+ +'.ft .ts{color:#8a8f8d;font-size:9.5px;text-align:right;margin-top:10px}';
+
+function buildPrintHTML(rec){
+  var m = rec ? {brand:rec.brand,store:rec.store,period:rec.period,date:rec.date,person:rec.person}
+              : {brand:S.meta.brand,store:S.meta.store,period:S.meta.period,date:S.meta.date,person:S.meta.person};
+  var answers = rec ? (rec.answers||{}) : S.answers;
+  var got=0, done=0, fails=[], cutAll=0;
+  ITEMS.forEach(function(it){
+    var a=answers[it.id];
+    if(a&&a.r){ done++; if(a.r==='pass') got+=it.score; else { fails.push(it); cutAll+=it.score; } }
+  });
+  var pct = Math.round(got/TOTAL*100);
+
+  /* 分类汇总 */
+  var catRows = CATS.map(function(c){
+    var g=0;
+    c.items.forEach(function(it){ var a=answers[it.id]; if(a&&a.r==='pass') g+=it.score; });
+    var p = c.max? Math.round(g/c.max*100):0;
+    return '<tr><td>'+esc(c.name)+'</td><td class="c">'+c.max+'</td><td class="b">'+g+'</td><td class="c">'+p+'%</td></tr>';
+  }).join('');
+
+  /* 明细表（完整 50 项，结构同 Excel：分类/子类/检查项/内容/分值/得分） */
+  var detailRows='';
+  CATS.forEach(function(c, ci){
+    var g=0; c.items.forEach(function(it){ var a=answers[it.id]; if(a&&a.r==='pass') g+=it.score; });
+    detailRows += '<tr><td colspan="6" class="band">'+esc(c.name)+'（满分 '+c.max+' 分 · 实得 '+g+' 分）</td></tr>';
+    DATA[ci].groups.forEach(function(gp, gi){
+      gp.items.forEach(function(it, ii){
+        var id='i'+ci+'_'+gi+'_'+ii, a=answers[id]||{};
+        var res = a.r==='pass'?'符合':(a.r==='fail'?'不符合':'未评');
+        var rc  = a.r==='pass'?'ok':(a.r==='fail'?'bad':'c');
+        detailRows += '<tr>'
+          +'<td>'+esc(gp.name||'—')+'</td>'
+          +'<td><b>'+esc(it.name)+'</b></td>'
+          +'<td>'+esc(it.req)+'</td>'
+          +'<td class="c">'+it.score+'</td>'
+          +'<td class="b">'+(a.r? (a.r==='pass'?it.score:0) : '—')+'</td>'
+          +'<td class="'+rc+'">'+res+'</td>'
+          +'</tr>';
+      });
+    });
+  });
+
+  /* 不符合明细 + 整改待办（责任人/期限留白可手写，已指派则打印） */
+  var todos = rec ? S.todos.filter(function(t){ return t.recId===rec.id; }) : S.todos;
+  var todoRows;
+  if(fails.length){
+    todoRows = fails.map(function(it,i){
+      var a=answers[it.id]||{};
+      var t = todos.filter(function(x){ return x.itemId===it.id && x.status!=='done'; })[0]||{};
+      var phs=(a.photos||[]).map(function(p){ return '<img src="'+p+'">'; }).join('');
+      return '<tr><td class="c">'+(i+1)+'</td><td>'+esc(it.cat)+'</td><td><b>'+esc(it.name)+'</b></td>'
+        +'<td>'+ (a.note? esc(a.note) : '（未填写问题描述）') + (phs? '<div class="phs">'+phs+'</div>':'') +'</td>'
+        +'<td class="c">'+it.score+'</td>'
+        +'<td class="w">'+esc(t.owner||'')+'</td>'
+        +'<td class="w">'+esc(t.due||'')+'</td>'
+        +'<td class="w">'+(t.status==='doing'?'整改中':'')+'</td></tr>';
+    }).join('');
+  }else{
+    todoRows = '<tr><td colspan="8" style="text-align:center;color:#666">本次巡检未发现不符合项</td></tr>';
+  }
+
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>营运二部巡检报告</title><style>'+PRINT_CSS+'</style></head><body>'
+   +'<div class="hd"><h1>营运二部负责人 · 巡检报告</h1>'
+   +'<div class="meta">品牌：'+esc(m.brand||'—')+'　｜　门店：'+esc(m.store||'—')+'　｜　时段：'+esc(m.period||'—')+'　｜　巡检日期：'+esc(m.date||'—')+'　｜　巡检人：'+esc(m.person||'—')+'</div></div>'
+   +'<div class="score">总得分：<b>'+got+'</b> / '+TOTAL+' 分'
+   +'<span>得分率 '+pct+'%</span><span>已评 '+done+' / '+ITEMS.length+' 项</span><span>不符合 '+fails.length+' 项（扣 '+cutAll+' 分）</span></div>'
+   +'<h2>一、分类得分汇总</h2>'
+   +'<table><thead><tr><th style="width:34%">分类</th><th style="width:22%">满分</th><th style="width:22%">得分</th><th style="width:22%">得分率</th></tr></thead><tbody>'+catRows+'</tbody></table>'
+   +'<h2>二、巡检明细（共 '+ITEMS.length+' 项，满分 '+TOTAL+' 分）</h2>'
+   +'<table><thead><tr><th style="width:9%">子类</th><th style="width:11%">检查项</th><th>检查内容</th><th style="width:6%">分值</th><th style="width:6%">得分</th><th style="width:9%">结果</th></tr></thead><tbody>'+detailRows+'</tbody></table>'
+   +'<h2>三、不符合明细与整改待办</h2>'
+   +'<table><thead><tr><th style="width:5%">序号</th><th style="width:9%">分类</th><th style="width:12%">检查项</th><th>问题描述 / 照片留证</th><th style="width:6%">扣分</th><th style="width:12%">责任人</th><th style="width:12%">整改期限</th><th style="width:10%">完成情况</th></tr></thead><tbody>'+todoRows+'</tbody></table>'
+   +'<div class="ft"><p>评分标准：内容里但凡有不符合标准的，即不得分。</p>'
+   +'<p class="sig">巡检人签字：______________　　门店负责人签字：______________　　整改确认日期：______________</p>'
+   +'<p class="ts">报告生成时间：'+nowStr()+'</p></div>'
+   +'</body></html>';
+}
+/* ---------- PDF 直接下载（html2canvas + jsPDF，无需打印面板） ---------- */
+var PDF_LIB = {
+  h2c: 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+  jspdf: 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'
+};
+function loadScript(url){
+  return new Promise(function(res, rej){
+    var s=document.createElement('script');
+    s.src=url; s.onload=res; s.onerror=function(){ rej(new Error('load fail: '+url)); };
+    document.head.appendChild(s);
+  });
+}
+function ensurePdfLibs(){
+  var jobs=[];
+  if(!(window.html2canvas || (window.h2c&&window.h2c.html2canvas))) jobs.push(loadScript(PDF_LIB.h2c));
+  if(!(window.jspdf && window.jspdf.jsPDF)) jobs.push(loadScript(PDF_LIB.jspdf));
+  return Promise.all(jobs);
+}
+function pdfFileName(rec){
+  var d=new Date();
+  var ds = d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')
+    +'_'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0');
+  var store = rec ? (rec.store||'巡检') : (S.meta.store||'巡检');
+  return store+'_巡检报告_'+ds+'.pdf';
+}
+var _pdfBusy = false;
+function printPDF(rec){ /* 直接下载 PDF 文件 */
+  if(_pdfBusy){ toast('正在生成 PDF，请稍候…'); return; }
+  _pdfBusy = true;
+  toast('正在生成 PDF…', 4000);
+  var holder = null;
+  ensurePdfLibs().then(function(){
+    /* 离屏渲染报告页 */
+    holder = document.createElement('div');
+    holder.style.cssText='position:fixed;left:-10000px;top:0;width:794px;background:#fff;z-index:-1;';
+    holder.innerHTML = buildPrintHTML(rec).replace(/^[\s\S]*?<body>/,'').replace(/<\/body>[\s\S]*$/,'');
+    document.body.appendChild(holder);
+
+    var waitImgs = Promise.all(
+      Array.prototype.slice.call(holder.querySelectorAll('img')).map(function(im){
+        return im.complete ? Promise.resolve() : new Promise(function(r){ im.onload=im.onerror=r; });
+      })
+    );
+    return waitImgs.then(function(){
+      var H2C = window.html2canvas || (window.h2c && window.h2c.html2canvas);
+      return H2C(holder, {scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false, windowWidth:794});
+    }).then(function(canvas){
+      document.body.removeChild(holder);
+      var JsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+      var pdf = new JsPDF({orientation:'portrait', unit:'pt', format:'a4'});
+      var pw = pdf.internal.pageSize.getWidth();    /* 595pt */
+      var ph = pdf.internal.pageSize.getHeight();   /* 842pt */
+      var margin = 18;
+      var drawW = pw - margin*2;
+      var drawH = canvas.width ? drawW * canvas.height / canvas.width : 0;
+      /* 每页可容纳的 canvas 像素高 */
+      var pageCanvasH = Math.floor((ph - margin*2) * canvas.width / drawW);
+      var y = 0, page = 0;
+      while(y < canvas.height){
+        var sliceH = Math.min(pageCanvasH, canvas.height - y);
+        var slice = document.createElement('canvas');
+        slice.width = canvas.width; slice.height = sliceH;
+        var ctx = slice.getContext('2d');
+        ctx.fillStyle='#fff'; ctx.fillRect(0,0,slice.width,slice.height);
+        ctx.drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        if(page>0) pdf.addPage();
+        pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', margin, margin, drawW, drawW*sliceH/canvas.width);
+        y += sliceH; page++;
+      }
+      /* Blob + 锚点下载：与 CSV/JSON 导出同路径，兼容性最好 */
+      var blob = pdf.output('blob');
+      var name = pdfFileName(rec);
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 2000);
+      toast('PDF 已开始下载：'+name);
+    });
+  }).catch(function(e){
+    if(holder && holder.parentNode) document.body.removeChild(holder);
+    console.error(e);
+    toast('在线生成失败，改用打印方式保存 PDF');
+    printFallback(rec);
+  }).finally(function(){ _pdfBusy=false; });
+}
+/* 兜底：CDN 不可用时退回打印面板 */
+function printFallback(rec){
+  var html = buildPrintHTML(rec);
+  var f = document.createElement('iframe');
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
+  document.body.appendChild(f);
+  var d = f.contentDocument || f.contentWindow.document;
+  d.open(); d.write(html); d.close();
+  var nImg = (html.match(/<img /g)||[]).length;
+  var go = function(){
+    try{ f.contentWindow.focus(); f.contentWindow.print(); toast('在打印面板选择「存储为 PDF」即可保存'); }
+    catch(e){ toast('当前浏览器不支持，请用 Safari / Chrome 打开'); }
+    setTimeout(function(){ if(f.parentNode) document.body.removeChild(f); }, 60000);
+  };
+  setTimeout(go, nImg? 900 : 350);
+}
+$('#btnPdf').addEventListener('click', function(){
+  var st = stat();
+  if(st.done===0){ toast('还没有评分，请先完成巡检评分'); return; }
+  printPDF(null);
+});
+
+/* ---------- 导出 / 复制 ---------- */
+function fileTag(){
+  var d=new Date();
+  return (S.meta.store||'巡检')+'_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')
+    +'_'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0');
+}
+function download(text, name, type){
+  var b=new Blob([text],{type:type+';charset=utf-8'}), u=URL.createObjectURL(b);
+  var a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(u); },400);
+  toast('已导出：'+name);
+}
+function copyText(text, okMsg){
+  var done=function(){ toast(okMsg||'已复制'); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text,done); });
+  } else fallbackCopy(text,done);
+}
+function fallbackCopy(text, cb){
+  var ta=document.createElement('textarea'); ta.value=text;
+  ta.style.cssText='position:fixed;left:-9999px;top:0'; document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try{ document.execCommand('copy'); cb(); }catch(e){ toast('复制失败，请长按选择文本'); }
+  document.body.removeChild(ta);
+}
+
+/* ---------- 启动 ---------- */
+renderMeta();
+render();
+/* 未评分但已填写的备注也要在报告中体现，初始渲染已完成 */
+</script>
+</body>
+</html>
